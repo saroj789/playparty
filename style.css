@@ -1,0 +1,13 @@
+body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#progress-container {
+  touch-action: none;
+}
+
+::selection {
+  background: rgba(244, 63, 94, 0.3);
+  color: #fff;
+}

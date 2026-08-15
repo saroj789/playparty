@@ -17,17 +17,17 @@
   <!-- Hidden YouTube Player Instance -->
   <div id="yt-player" class="hidden"></div>
 
-  <!-- Top Navigation (Fully Responsive) -->
+  <!-- Top Navigation (Fixed Mobile Overflow) -->
   <header class="relative z-20 w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
     <div class="flex items-center gap-2 text-white font-bold tracking-wider text-sm bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg">
       <span class="material-symbols-outlined text-rose-500 text-[18px]">play_circle</span>
       <span>PlayParty</span>
     </div>
 
-    <!-- URL Input Control -->
-    <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 shadow-lg w-full sm:w-auto justify-center">
-      <input id="playlist-url-input" type="text" placeholder="Paste YouTube Playlist URL..." class="bg-transparent text-white text-xs sm:text-sm focus:outline-none w-48 sm:w-72 placeholder-white/40" />
-      <button id="load-playlist-btn" class="text-xs bg-white text-black font-bold px-3 py-1.5 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer">Load</button>
+    <!-- URL Input Control with flex-1 and min-w-0 to prevent overflowing -->
+    <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 shadow-lg w-full sm:w-auto">
+      <input id="playlist-url-input" type="text" placeholder="Paste YouTube Playlist URL..." class="bg-transparent text-white text-xs sm:text-sm focus:outline-none flex-1 sm:w-72 min-w-0 placeholder-white/40" />
+      <button id="load-playlist-btn" class="text-xs bg-white text-black font-bold px-3 py-1.5 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer shrink-0">Load</button>
     </div>
   </header>
 
@@ -53,7 +53,7 @@
         </div>
       </div>
 
-      <!-- Controls Row with Mute Button Added -->
+      <!-- Controls Row -->
       <div class="flex items-center justify-between px-2 pt-0.5">
         <button id="btn-mute" class="text-zinc-300 hover:text-white transition-transform hover:scale-110 active:scale-95 cursor-pointer">
           <span id="mute-icon" class="material-symbols-outlined text-[24px]">volume_up</span>
@@ -65,7 +65,7 @@
           <button id="btn-next" class="text-zinc-300 hover:text-white transition-transform hover:scale-110 active:scale-95 cursor-pointer"><span class="material-symbols-outlined text-[28px]">skip_next</span></button>
         </div>
 
-        <div class="w-6"></div> <!-- Spacer for visual balance -->
+        <div class="w-6"></div>
       </div>
     </div>
   </div>

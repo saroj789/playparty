@@ -63,12 +63,24 @@ function extractPlaylistId(input) {
 function loadPlaylistFromUrl(playlistUrl) {
   const playlistId = extractPlaylistId(playlistUrl);
   if (playlistId) {
+    // Clear the current queue so YouTube forces the new playlist on the first click
+    if (player && typeof player.stopVideo === 'function') {
+      player.stopVideo();
+    }
+
     player.loadPlaylist({
       listType: 'playlist',
       list: playlistId,
       index: 0
     });
     localStorage.setItem(STORAGE_PLAYLIST_KEY, playlistUrl);
+
+    // Force immediate playback on the first click
+    setTimeout(() => {
+      if (player && typeof player.playVideo === 'function') {
+        player.playVideo();
+      }
+    }, 300);
   } else {
     console.error("Could not parse a valid playlist ID from the input.");
   }
@@ -89,7 +101,10 @@ function onPlayerStateChange(event) {
     playIcon.innerText = 'pause';
     startProgressTimer();
     updateTrackInfo();
-  } else if (event.data === YT.PlayerState.CUED || event.data === YT.PlayerState.UNSTARTED) {
+  } else if (event.data === YT.PlayerState.CUED) {
+    updateTrackInfo();
+    player.playVideo();
+  } else if (event.data === YT.PlayerState.UNSTARTED) {
     updateTrackInfo();
   } else if (event.data === YT.PlayerState.BUFFERING) {
     // Left empty intentionally to prevent flickering text during seeks/buffering
@@ -158,7 +173,6 @@ function setupEventListeners() {
     else player.playVideo();
   });
 
-  // Fixed Next and Previous buttons to force mobile playback continuation
   document.getElementById('btn-next').addEventListener('click', () => {
     player.nextVideo();
     setTimeout(() => { player.playVideo(); }, 300);
@@ -167,6 +181,12 @@ function setupEventListeners() {
   document.getElementById('btn-prev').addEventListener('click', () => {
     player.previousVideo();
     setTimeout(() => { player.playVideo(); }, 300);
+  });
+
+  document.getElementById('btn-reload').addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_PLAYLIST_KEY);
+    document.getElementById('playlist-url-input').value = DEFAULT_PLAYLIST_URL;
+    loadPlaylistFromUrl(DEFAULT_PLAYLIST_URL);
   });
 
   // Volume slider input handler

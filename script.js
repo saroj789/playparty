@@ -3,7 +3,6 @@ let isPlaying = false;
 let progressInterval = null;
 const STORAGE_PLAYLIST_KEY = 'playparty_playlist_url';
 
-// Default YouTube Music playlist ID or URL
 const DEFAULT_PLAYLIST_URL = 'https://music.youtube.com/playlist?list=RDCLAK5uy_lnm4v4arFrmL63NUzIdoXJe-E7G4_sriU';
 
 function onYouTubeIframeAPIReady() {
@@ -27,6 +26,9 @@ function onYouTubeIframeAPIReady() {
 function onPlayerReady() {
   setupEventListeners();
   autoLoadSavedPlaylist();
+  if (player && typeof player.setVolume === 'function') {
+    player.setVolume(100);
+  }
 }
 
 function onPlayerError(event) {
@@ -38,12 +40,10 @@ function onPlayerError(event) {
   }, 500);
 }
 
-// Safely handles both raw IDs (like RD...) and full URLs
 function extractPlaylistId(input) {
   if (!input) return null;
   input = input.trim();
 
-  // If it doesn't look like a URL, treat the input directly as the ID
   if (!input.includes('http') && !input.includes('youtube.com')) {
     return input;
   }
@@ -53,10 +53,9 @@ function extractPlaylistId(input) {
     const listParam = urlObj.searchParams.get('list');
     if (listParam) return listParam;
   } catch (e) {
-    // Malformed URL, continue to regex fallback
+    // Malformed URL fallback
   }
 
-  // Fallback regex pattern matching
   const regExp = /[?&]list=([^#\&\?]+)/;
   const match = input.match(regExp);
   return (match && match[1]) ? match[1] : input;
@@ -80,7 +79,9 @@ function loadPlaylistFromUrl(playlistUrl) {
 function autoLoadSavedPlaylist() {
   const savedUrl = localStorage.getItem(STORAGE_PLAYLIST_KEY);
   const targetUrl = savedUrl || DEFAULT_PLAYLIST_URL;
-  document.getElementById('playlist-url-input').value = targetUrl;
+  if (savedUrl) {
+    document.getElementById('playlist-url-input').value = savedUrl;
+  }
   loadPlaylistFromUrl(targetUrl);
 }
 
@@ -132,9 +133,13 @@ function updateBackground(videoId) {
 function setupEventListeners() {
   const loadBtn = document.getElementById('load-playlist-btn');
   const urlInput = document.getElementById('playlist-url-input');
+  const volumeSlider = document.getElementById('volume-slider');
+  const volumePill = document.getElementById('volume-pill-container');
+  const btnMute = document.getElementById('btn-mute');
 
   loadBtn.addEventListener('click', () => {
-    loadPlaylistFromUrl(urlInput.value.trim());
+    const val = urlInput.value.trim();
+    if (val) loadPlaylistFromUrl(val);
   });
 
   urlInput.addEventListener('keydown', (e) => {
@@ -149,6 +154,51 @@ function setupEventListeners() {
   document.getElementById('btn-next').addEventListener('click', () => player.nextVideo());
   document.getElementById('btn-prev').addEventListener('click', () => player.previousVideo());
 
+  volumeSlider.addEventListener('input', (e) => {
+    const vol = e.target.value;
+    if (player && typeof player.setVolume === 'function') {
+      player.setVolume(vol);
+      if (vol > 0 && player.isMuted()) {
+        player.unMute();
+      }
+    }
+    updateVolumeIcon(vol);
+  });
+
+  // Click anywhere on the volume pill to adjust volume
+  if (volumePill) {
+    volumePill.addEventListener('click', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.closest('button')) return;
+      const rect = volumeSlider.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const width = rect.width;
+      let percentage = Math.min(Math.max(clickX / width, 0), 1);
+      let newVol = Math.round(percentage * 100);
+      volumeSlider.value = newVol;
+      if (player && typeof player.setVolume === 'function') {
+        player.setVolume(newVol);
+        if (newVol > 0 && player.isMuted()) {
+          player.unMute();
+        }
+      }
+      updateVolumeIcon(newVol);
+    });
+  }
+
+  btnMute.addEventListener('click', () => {
+    if (!player) return;
+    if (player.isMuted()) {
+      player.unMute();
+      const currentVol = player.getVolume();
+      volumeSlider.value = currentVol;
+      updateVolumeIcon(currentVol);
+    } else {
+      player.mute();
+      volumeSlider.value = 0;
+      document.getElementById('volume-icon').innerText = 'volume_off';
+    }
+  });
+
   document.getElementById('progress-container').addEventListener('click', (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
@@ -157,6 +207,17 @@ function setupEventListeners() {
       player.seekTo(duration * pct, true);
     }
   });
+}
+
+function updateVolumeIcon(vol) {
+  const volumeIcon = document.getElementById('volume-icon');
+  if (vol == 0) {
+    volumeIcon.innerText = 'volume_off';
+  } else if (vol < 50) {
+    volumeIcon.innerText = 'volume_down';
+  } else {
+    volumeIcon.innerText = 'volume_up';
+  }
 }
 
 function startProgressTimer() {

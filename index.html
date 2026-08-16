@@ -42,9 +42,9 @@
         <span>PlayParty</span>
       </div>
 
-      <!-- URL Input Control -->
+      <!-- Polished URL Input Control -->
       <div
-        class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 shadow-lg"
+        class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 shadow-lg transition-all focus-within:border-white/30"
       >
         <input
           id="playlist-url-input"
@@ -98,29 +98,67 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-center gap-6 w-full pt-0.5">
-          <button
-            id="btn-prev"
-            class="text-zinc-300 hover:text-white transition-transform hover:scale-110 active:scale-95 cursor-pointer"
-          >
-            <span class="material-symbols-outlined text-[28px]"
-              >skip_previous</span
+        <!-- Controls, Playback & Volume Bar Layout -->
+        <div class="flex items-center justify-between w-full pt-0.5">
+          <!-- Non-shifting Smooth Volume Control with Increased Height and Left Padding -->
+          <div class="relative flex items-center group h-10 w-10">
+            <button
+              id="btn-mute"
+              class="absolute left-0 z-10 text-zinc-400 hover:text-white transition-colors cursor-pointer focus:outline-none flex items-center h-full pl-2.5"
+              title="Mute / Unmute"
             >
-          </button>
-          <button
-            id="btn-play-pause"
-            class="w-11 h-11 rounded-full bg-white hover:bg-zinc-200 text-black flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 shadow-lg cursor-pointer"
-          >
-            <span id="play-icon" class="material-symbols-outlined text-[26px]"
-              >play_arrow</span
+              <span
+                id="volume-icon"
+                class="material-symbols-outlined text-[24px]"
+                >volume_up</span
+              >
+            </button>
+            <div
+              id="volume-pill-container"
+              class="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-black/35 backdrop-blur-md pl-4 pr-4 py-4 rounded-full border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 shadow-2xl cursor-pointer"
             >
-          </button>
-          <button
-            id="btn-next"
-            class="text-zinc-300 hover:text-white transition-transform hover:scale-110 active:scale-95 cursor-pointer"
-          >
-            <span class="material-symbols-outlined text-[28px]">skip_next</span>
-          </button>
+              <div class="w-6"></div>
+              <input
+                id="volume-slider"
+                type="range"
+                min="0"
+                max="100"
+                value="100"
+                class="w-20 accent-rose-500 cursor-pointer h-1 bg-white/20 rounded-lg appearance-none"
+              />
+            </div>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-6">
+            <button
+              id="btn-prev"
+              class="text-zinc-300 hover:text-white transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[28px]"
+                >skip_previous</span
+              >
+            </button>
+            <button
+              id="btn-play-pause"
+              class="w-11 h-11 rounded-full bg-white hover:bg-zinc-200 text-black flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 shadow-lg cursor-pointer"
+            >
+              <span id="play-icon" class="material-symbols-outlined text-[26px]"
+                >play_arrow</span
+              >
+            </button>
+            <button
+              id="btn-next"
+              class="text-zinc-300 hover:text-white transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[28px]"
+                >skip_next</span
+              >
+            </button>
+          </div>
+
+          <!-- Layout Spacer to Keep Play Center-Aligned -->
+          <div class="w-10"></div>
         </div>
       </div>
     </div>

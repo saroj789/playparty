@@ -77,7 +77,13 @@ function loadPlaylistFromUrl(playlistUrl) {
       list: playlistId,
       index: 0
     });
-    localStorage.setItem(STORAGE_PLAYLIST_KEY, playlistUrl);
+
+    // Only save to localStorage if it's a custom playlist (not the default one)
+    if (playlistUrl !== DEFAULT_PLAYLIST_URL) {
+      localStorage.setItem(STORAGE_PLAYLIST_KEY, playlistUrl);
+    } else {
+      localStorage.removeItem(STORAGE_PLAYLIST_KEY);
+    }
 
     // Force immediate playback on the first click
     setTimeout(() => {
@@ -92,12 +98,15 @@ function loadPlaylistFromUrl(playlistUrl) {
 
 function autoLoadSavedPlaylist() {
   const savedUrl = localStorage.getItem(STORAGE_PLAYLIST_KEY);
-  const targetUrl = savedUrl || DEFAULT_PLAYLIST_URL;
   const inputEl = document.getElementById('playlist-url-input');
-  if (inputEl) {
-    inputEl.value = targetUrl;
+
+  if (savedUrl && savedUrl !== DEFAULT_PLAYLIST_URL) {
+    inputEl.value = savedUrl;
+    loadPlaylistFromUrl(savedUrl);
+  } else {
+    inputEl.value = '';
+    loadPlaylistFromUrl(DEFAULT_PLAYLIST_URL);
   }
-  loadPlaylistFromUrl(targetUrl);
   updateLoadButtonState();
 }
 
@@ -181,7 +190,6 @@ function setupEventListeners() {
   const volumePill = document.getElementById('volume-pill-container');
   const muteIcon = document.getElementById('mute-icon');
 
-  // Monitor input text changes to dynamically enable/disable the load button
   urlInput.addEventListener('input', () => {
     updateLoadButtonState();
   });
@@ -217,7 +225,7 @@ function setupEventListeners() {
 
   document.getElementById('btn-reload').addEventListener('click', () => {
     localStorage.removeItem(STORAGE_PLAYLIST_KEY);
-    urlInput.value = DEFAULT_PLAYLIST_URL;
+    urlInput.value = '';
     updateLoadButtonState();
     loadPlaylistFromUrl(DEFAULT_PLAYLIST_URL);
   });

@@ -1,6 +1,7 @@
 let player;
 let isPlaying = false;
 let progressInterval = null;
+let isDraggingProgress = false;
 const STORAGE_PLAYLIST_KEY = 'playparty_playlist_url';
 
 const DEFAULT_PLAYLIST_URL = 'https://music.youtube.com/playlist?list=RDCLAK5uy_lnm4v4arFrmL63NUzIdoXJe-E7G4_sriU';
@@ -125,17 +126,6 @@ function updateBackground(videoId) {
   img.src = highResUrl;
 }
 
-function handleSeek(e) {
-  const container = document.getElementById('progress-container');
-  const rect = container.getBoundingClientRect();
-  const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-  const pct = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
-  const duration = player.getDuration() || 0;
-  if (duration > 0) {
-    player.seekTo(duration * pct, true);
-  }
-}
-
 function updateVolumeIcon(vol) {
   const muteIcon = document.getElementById('mute-icon');
   if (vol == 0) {
@@ -217,25 +207,83 @@ function setupEventListeners() {
     }
   });
 
-  // Responsive progress bar click & touch interactions
+  // Smooth Interactive Progress Bar Scrubbing / Dragging Handler
   const progressContainer = document.getElementById('progress-container');
-  progressContainer.addEventListener('click', handleSeek);
-  progressContainer.addEventListener('touchstart', (e) => {
-    handleSeek(e);
-    e.preventDefault();
-  }, { passive: false });
+
+  function getProgressPercentage(e) {
+    const rect = progressContainer.getBoundingClientRect();
+    const clientX = e.clientX
+      || (e.touches && e.touches[0] ? e.touches[0].clientX : 0)
+      || (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : 0);
+    return Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
+  }
+
+  function onProgressStart(e) {
+    if (!player || typeof player.getDuration !== 'function') return;
+    isDraggingProgress = true;
+    stopProgressTimer();
+
+    const pct = getProgressPercentage(e);
+    document.getElementById('progress-played').style.width = `${pct * 100}%`;
+
+    const duration = player.getDuration() || 0;
+    if (duration > 0) {
+      document.getElementById('time-current').innerText = formatTime(duration * pct);
+    }
+
+    if (e.type === 'touchstart') e.preventDefault();
+  }
+
+  function onProgressMove(e) {
+    if (!isDraggingProgress) return;
+    const pct = getProgressPercentage(e);
+    document.getElementById('progress-played').style.width = `${pct * 100}%`;
+
+    const duration = player.getDuration() || 0;
+    if (duration > 0) {
+      document.getElementById('time-current').innerText = formatTime(duration * pct);
+    }
+  }
+
+  function onProgressEnd(e) {
+    if (!isDraggingProgress) return;
+    isDraggingProgress = false;
+
+    const pct = getProgressPercentage(e);
+    const duration = player.getDuration() || 0;
+    if (duration > 0) {
+      player.seekTo(duration * pct, true);
+
+      // Prevent YouTube from auto-resuming playback when seeking while paused
+      if (!isPlaying) {
+        player.pauseVideo();
+      }
+    }
+
+    if (isPlaying) {
+      startProgressTimer();
+    }
+  }
+
+  progressContainer.addEventListener('mousedown', onProgressStart);
+  document.addEventListener('mousemove', onProgressMove);
+  document.addEventListener('mouseup', onProgressEnd);
+
+  progressContainer.addEventListener('touchstart', onProgressStart, { passive: false });
+  document.addEventListener('touchmove', onProgressMove, { passive: false });
+  document.addEventListener('touchend', onProgressEnd);
 }
 
 function startProgressTimer() {
   stopProgressTimer();
   progressInterval = setInterval(() => {
-    if (!player || !player.getCurrentTime) return;
+    if (isDraggingProgress || !player || !player.getCurrentTime) return;
     const current = player.getCurrentTime() || 0;
     const duration = player.getDuration() || 0;
     document.getElementById('time-current').innerText = formatTime(current);
     document.getElementById('time-total').innerText = formatTime(duration);
     document.getElementById('progress-played').style.width = duration > 0 ? `${(current / duration) * 100}%` : '0%';
-  }, 250);
+  }, 50);
 }
 
 function stopProgressTimer() {

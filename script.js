@@ -4,7 +4,7 @@ let progressInterval = null;
 let isDraggingProgress = false;
 const STORAGE_PLAYLIST_KEY = 'playparty_playlist_url';
 
-const DEFAULT_PLAYLIST_URL = 'https://music.youtube.com/playlist?list=RDCLAK5uy_lnm4v4arFrmL63NUzIdoXJe-E7G4_sriU';
+const DEFAULT_PLAYLIST_URL = 'https://www.youtube.com/watch?v=TwFBtV13KQQ&list=PLktzVu3BNrn4pnOLxO9s3wCvTTYEQQHbz';
 
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('yt-player', {
@@ -89,9 +89,11 @@ function onPlayerStateChange(event) {
     playIcon.innerText = 'pause';
     startProgressTimer();
     updateTrackInfo();
+  } else if (event.data === YT.PlayerState.CUED || event.data === YT.PlayerState.UNSTARTED) {
+    // Automatically load track details as soon as the playlist/song is cued on load
+    updateTrackInfo();
   } else if (event.data === YT.PlayerState.BUFFERING) {
-    document.getElementById('track-title').innerText = "Loading track...";
-    document.getElementById('track-artist').innerText = "Please wait...";
+    // Left empty intentionally to prevent flickering text during seeks/buffering
   } else {
     isPlaying = false;
     playIcon.innerText = 'play_arrow';

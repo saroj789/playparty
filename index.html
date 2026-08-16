@@ -38,9 +38,17 @@
       class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 shadow-lg w-full sm:w-auto">
       <input id="playlist-url-input" type="text" placeholder="Paste YouTube Playlist URL..."
         class="bg-transparent text-white text-xs sm:text-sm focus:outline-none flex-1 sm:w-72 min-w-0 placeholder-white/40" />
+      <!-- Clear Text Button -->
+      <button id="clear-input-btn"
+        class="text-white/40 hover:text-white transition-colors cursor-pointer p-1 shrink-0 flex items-center justify-center"
+        title="Clear text">
+        <span class="material-symbols-outlined text-[18px]">close</span>
+      </button>
+      <!-- Load Button (disabled states handle transparency automatically) -->
       <button id="load-playlist-btn"
-        class="text-xs bg-white text-black font-bold px-3 py-1.5 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer shrink-0">
-        Load
+        class="bg-rose-500 hover:bg-rose-600 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0 shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-rose-500"
+        title="Load Playlist">
+        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
       </button>
     </div>
   </header>

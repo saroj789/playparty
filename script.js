@@ -61,6 +61,10 @@ function extractPlaylistId(input) {
 }
 
 function loadPlaylistFromUrl(playlistUrl) {
+  if (!playlistUrl || typeof playlistUrl !== 'string' || !playlistUrl.trim()) {
+    return;
+  }
+
   const playlistId = extractPlaylistId(playlistUrl);
   if (playlistId) {
     // Clear the current queue so YouTube forces the new playlist on the first click
@@ -89,8 +93,24 @@ function loadPlaylistFromUrl(playlistUrl) {
 function autoLoadSavedPlaylist() {
   const savedUrl = localStorage.getItem(STORAGE_PLAYLIST_KEY);
   const targetUrl = savedUrl || DEFAULT_PLAYLIST_URL;
-  document.getElementById('playlist-url-input').value = targetUrl;
+  const inputEl = document.getElementById('playlist-url-input');
+  if (inputEl) {
+    inputEl.value = targetUrl;
+  }
   loadPlaylistFromUrl(targetUrl);
+  updateLoadButtonState();
+}
+
+function updateLoadButtonState() {
+  const urlInput = document.getElementById('playlist-url-input');
+  const loadBtn = document.getElementById('load-playlist-btn');
+  if (!urlInput || !loadBtn) return;
+
+  if (!urlInput.value.trim()) {
+    loadBtn.disabled = true;
+  } else {
+    loadBtn.disabled = false;
+  }
 }
 
 function onPlayerStateChange(event) {
@@ -156,16 +176,28 @@ function updateVolumeIcon(vol) {
 function setupEventListeners() {
   const loadBtn = document.getElementById('load-playlist-btn');
   const urlInput = document.getElementById('playlist-url-input');
+  const clearBtn = document.getElementById('clear-input-btn');
   const volumeSlider = document.getElementById('volume-slider');
   const volumePill = document.getElementById('volume-pill-container');
   const muteIcon = document.getElementById('mute-icon');
+
+  // Monitor input text changes to dynamically enable/disable the load button
+  urlInput.addEventListener('input', () => {
+    updateLoadButtonState();
+  });
 
   loadBtn.addEventListener('click', () => {
     loadPlaylistFromUrl(urlInput.value.trim());
   });
 
+  clearBtn.addEventListener('click', () => {
+    urlInput.value = '';
+    updateLoadButtonState();
+    urlInput.focus();
+  });
+
   urlInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') loadBtn.click();
+    if (e.key === 'Enter' && urlInput.value.trim()) loadBtn.click();
   });
 
   document.getElementById('btn-play-pause').addEventListener('click', () => {
@@ -185,7 +217,8 @@ function setupEventListeners() {
 
   document.getElementById('btn-reload').addEventListener('click', () => {
     localStorage.removeItem(STORAGE_PLAYLIST_KEY);
-    document.getElementById('playlist-url-input').value = DEFAULT_PLAYLIST_URL;
+    urlInput.value = DEFAULT_PLAYLIST_URL;
+    updateLoadButtonState();
     loadPlaylistFromUrl(DEFAULT_PLAYLIST_URL);
   });
 

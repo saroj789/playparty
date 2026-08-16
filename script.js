@@ -90,7 +90,6 @@ function onPlayerStateChange(event) {
     startProgressTimer();
     updateTrackInfo();
   } else if (event.data === YT.PlayerState.CUED || event.data === YT.PlayerState.UNSTARTED) {
-    // Automatically load track details as soon as the playlist/song is cued on load
     updateTrackInfo();
   } else if (event.data === YT.PlayerState.BUFFERING) {
     // Left empty intentionally to prevent flickering text during seeks/buffering
@@ -159,8 +158,16 @@ function setupEventListeners() {
     else player.playVideo();
   });
 
-  document.getElementById('btn-next').addEventListener('click', () => player.nextVideo());
-  document.getElementById('btn-prev').addEventListener('click', () => player.previousVideo());
+  // Fixed Next and Previous buttons to force mobile playback continuation
+  document.getElementById('btn-next').addEventListener('click', () => {
+    player.nextVideo();
+    setTimeout(() => { player.playVideo(); }, 300);
+  });
+
+  document.getElementById('btn-prev').addEventListener('click', () => {
+    player.previousVideo();
+    setTimeout(() => { player.playVideo(); }, 300);
+  });
 
   // Volume slider input handler
   volumeSlider.addEventListener('input', (e) => {
@@ -256,7 +263,6 @@ function setupEventListeners() {
     if (duration > 0) {
       player.seekTo(duration * pct, true);
 
-      // Prevent YouTube from auto-resuming playback when seeking while paused
       if (!isPlaying) {
         player.pauseVideo();
       }
